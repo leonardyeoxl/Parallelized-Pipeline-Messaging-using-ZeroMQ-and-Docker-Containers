@@ -1,0 +1,27 @@
+version: "2"
+services:
+  producer:
+    build: .
+    environment:
+      - ZMQ_PRODUCER_ADDRESS=tcp://device:5559
+    volumes:
+      - $PWD:/app/
+    command: "python task_producer.py"
+    tty: true
+  device:
+    build: .
+    environment:
+      - ZMQ_PRODUCER_DEVICE_ADDRESS=tcp://*:5559
+      - ZMQ_WORKER_DEVICE_ADDRESS=tcp://*:5560
+    volumes:
+      - $PWD:/app/
+    command: "python streamer_device.py"
+    tty: true
+  worker:
+    build: .
+    environment:
+      - ZMQ_WORKER_ADDRESS=tcp://device:5560
+    volumes:
+      - $PWD:/app/
+    command: "python task_worker.py"
+    tty: true
