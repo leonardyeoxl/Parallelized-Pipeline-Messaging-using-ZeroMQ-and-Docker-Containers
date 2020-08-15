@@ -2,6 +2,8 @@
 
 ![Parallelized Pipeline Messaging](./zmq-docker-streamer.jpg)
 
+This repo is an extension of https://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/devices/streamer.html.
+
 ## Build
 
 ```sh
