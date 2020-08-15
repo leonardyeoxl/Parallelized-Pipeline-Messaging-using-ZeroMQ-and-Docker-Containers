@@ -4,20 +4,26 @@ import zmq
 import random
 import os
 
-def consumer():
+def worker():
     ZMQ_WORKER_ADDRESS = os.environ["ZMQ_WORKER_ADDRESS"]
-    consumer_id = random.randrange(1,10005)
-    print("I am consumer #{}".format(consumer_id))
-    
+    ZMQ_WORKER_TO_END_OF_PIPELINE_ADDRESS = os.environ["ZMQ_WORKER_TO_END_OF_PIPELINE_ADDRESS"]
+    worker_id = random.randrange(1,10005)
+    print("I am worker #{}".format(worker_id))
+
     context = zmq.Context()
     # recieve work
-    consumer_receiver = context.socket(zmq.PULL)
-    consumer_receiver.connect(ZMQ_WORKER_ADDRESS)
+    worker_receiver = context.socket(zmq.PULL)
+    worker_receiver.connect(ZMQ_WORKER_ADDRESS)
+
+    # send work
+    worker_sender = context.socket(zmq.PUSH)
+    worker_sender.connect(ZMQ_WORKER_TO_END_OF_PIPELINE_ADDRESS)
 
     while True:
-        work = consumer_receiver.recv_json()
+        work = worker_receiver.recv_json()
         data = work['num']
-        result = { 'consumer' : consumer_id, 'num' : data}
+        result = { 'worker' : worker_id, 'num' : data }
         print(result)
+        worker_sender.send_json(result)
 
-consumer()
+worker()

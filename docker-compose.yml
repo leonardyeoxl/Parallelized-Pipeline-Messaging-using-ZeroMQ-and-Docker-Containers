@@ -1,5 +1,16 @@
 version: "2"
 services:
+  device:
+    build: .
+    environment:
+      - ZMQ_PRODUCER_DEVICE_ADDRESS=tcp://*:5559
+      - ZMQ_WORKER_DEVICE_ADDRESS=tcp://*:5560
+      - ZMQ_WORKER_SENDER_DEVICE_ADDRESS=tcp://*:5562
+      - ZMQ_END_OF_PIPELINE_RECIEVER_DEVICE_ADDRESS=tcp://*:5563
+    volumes:
+      - $PWD:/app/
+    command: "./device_bind.sh"
+    tty: true
   producer:
     build: .
     environment:
@@ -8,20 +19,20 @@ services:
       - $PWD:/app/
     command: "python task_producer.py"
     tty: true
-  device:
-    build: .
-    environment:
-      - ZMQ_PRODUCER_DEVICE_ADDRESS=tcp://*:5559
-      - ZMQ_WORKER_DEVICE_ADDRESS=tcp://*:5560
-    volumes:
-      - $PWD:/app/
-    command: "python streamer_device.py"
-    tty: true
   worker:
     build: .
     environment:
       - ZMQ_WORKER_ADDRESS=tcp://device:5560
+      - ZMQ_WORKER_TO_END_OF_PIPELINE_ADDRESS=tcp://device:5562
     volumes:
       - $PWD:/app/
     command: "python task_worker.py"
+    tty: true
+  end_of_pipeline:
+    build: .
+    environment:
+      - ZMQ_END_OF_PIPELINE_ADDRESS=tcp://device:5563
+    volumes:
+      - $PWD:/app/
+    command: "python task_end_of_pipeline.py"
     tty: true
